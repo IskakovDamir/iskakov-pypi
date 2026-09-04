@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iskakov"
+version = "0.2.0"
+description = "Alias for own-baseline: does a single-cell potency score add anything beyond its own low-order primitive?"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "Damir Iskakov" }]
+keywords = ["single-cell", "scRNA-seq", "potency", "stemness", "benchmarking",
+            "incremental-validity", "null-calibration", "CytoTRACE", "SCENT"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = ["own-baseline>=0.2.0"]
+
+[project.scripts]
+iskakov = "iskakov:main"
+
+[project.urls]
+Homepage = "https://iskakov.dev/ownbaseline"
+Repository = "https://github.com/IskakovDamir/ownbaseline"
+Issues = "https://github.com/IskakovDamir/ownbaseline/issues"
+
+[tool.setuptools]
+py-modules = ["iskakov"]

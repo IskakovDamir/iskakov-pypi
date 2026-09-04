@@ -1,0 +1,46 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write          # trusted publishing, no API token
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: the tag and pyproject must agree
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          proj=$(python -c "import tomllib,pathlib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          echo "tag=$tag pyproject=$proj"
+          test "$tag" = "$proj" || { echo "::error::tag v$tag does not match pyproject $proj"; exit 1; }
+
+      - run: python -m pip install --upgrade build twine
+      - run: python -m build
+      - run: python -m twine check dist/*
+
+      - name: the wheel must declare the console script
+        run: |
+          python - <<'PY'
+          import zipfile, glob, sys
+          whl = glob.glob("dist/*.whl")[0]
+          names = zipfile.ZipFile(whl).namelist()
+          entry = [n for n in names if n.endswith("entry_points.txt")]
+          assert entry, "no entry_points.txt in the wheel"
+          txt = zipfile.ZipFile(whl).read(entry[0]).decode()
+          assert "iskakov = iskakov:main" in txt, txt
+          assert "iskakov.py" in names, names
+          print(whl, len(names), "entries, console script declared")
+          PY
+
+      - uses: pypa/gh-action-pypi-publish@release/v1

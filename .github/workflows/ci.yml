@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"        # the alias breaks when own-baseline moves, so look weekly
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      # own-baseline from PyPI, which is what a user of this alias actually
+      # gets. The weekly run is here so that a release of own-baseline that
+      # breaks the forwarded entry point shows up without anyone asking.
+      - run: pip install own-baseline
+      - run: pip install --no-deps .
+      - run: pip install pytest
+      - run: pytest tests/ -q --no-header
+
+      - name: both names run the same program
+        run: |
+          iskakov     floors --n 39505 --rho 0.4844 --no-color > a.txt
+          ownbaseline floors --n 39505 --rho 0.4844 --no-color > b.txt
+          diff a.txt b.txt && echo "identical"
